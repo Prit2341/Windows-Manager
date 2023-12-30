@@ -18,14 +18,14 @@ Windows Manager is a utility tool designed to simplify and automate various file
 
 ## About
 
-Windows Manager is a powerful tool created to enhance the file management experience for Windows users. By automating certain tasks, it streamlines the process of cleaning temporary files, managing the Recycle Bin, organizing WhatsApp files, and managing user files that have not been accessed for a specified duration. When you see the code you will probably thinks it's just a piece of code on how you can use them on your PC<br>
+Windows Manager is a powerful tool created to enhance the file management experience for Windows users. By automating certain tasks, it streamlines the process of cleaning temporary files, managing the Recycle Bin, organizing WhatsApp files, and managing user files that have not been accessed for a specified duration. When you see the code you will probably think it's just a piece of code on how you can use them on your PC<br>
 😎😎let me explain!
 
 ## Installation
 
 First of all, you Have to install all libraries in your global Environment(What I am talking About you already Know that🤔🤔)
-oh Not First We have to clone the repo First my bad 🤦‍♂️🤦‍♂️
-Clone the repository: `git clone https://github.com/your-username/windows-manager.git`
+oh Not First We have to clone the repo, my bad 🤦‍♂️🤦‍♂️
+Clone the repository: `git clone https://github.com/Prit2341/Windows-Manager.git`
 ```
 pip install tempfile # for Temp file
 pip install pywin32 # for Recycle Bin
