@@ -1,10 +1,9 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QInputDialog, QMessageBox
-from PyQt5.QtCore import Qt
-from ui.recycle_bin_gui import RecycleBinGUI  # Updated import
-from cleaner import clean_recycle_bin, set_cleaning_frequency, get_cleaning_frequency
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
+from datetime import datetime, timedelta
+from tempcleaner import bytes_to_mb, get_total_temp_file_size, delete_temp_files, get_cleanup_schedule, modify_cleanup_schedule
 
-class RecycleBinCleanerGUI(QWidget):
+class TempFileCleanerGUI(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -13,57 +12,67 @@ class RecycleBinCleanerGUI(QWidget):
     def init_ui(self):
         layout = QVBoxLayout()
 
-        clean_btn = QPushButton("Clean Recycle Bin Now", self)
-        clean_btn.clicked.connect(self.clean_recycle_bin)
+        self.info_label = QLabel("Welcome to Temp File Cleaner GUI!", self)
+        layout.addWidget(self.info_label)
+
+        clean_btn = QPushButton("Clean Temporary Files", self)
+        clean_btn.clicked.connect(self.clean_temp_files)
         layout.addWidget(clean_btn)
 
-        add_days_btn = QPushButton("Add Days for Cleaning", self)
-        add_days_btn.clicked.connect(self.add_days_dialog)
-        layout.addWidget(add_days_btn)
+        modify_btn = QPushButton("Modify Cleaning Schedule", self)
+        modify_btn.clicked.connect(self.modify_cleanup_schedule)
+        layout.addWidget(modify_btn)
 
-        modify_days_btn = QPushButton("Modify Cleaning Frequency", self)
-        modify_days_btn.clicked.connect(self.modify_days_dialog)
-        layout.addWidget(modify_days_btn)
-
-        recycle_bin_btn = QPushButton("Open Recycle Bin GUI", self)
-        recycle_bin_btn.clicked.connect(self.open_recycle_bin_gui)
-        layout.addWidget(recycle_bin_btn)
+        exit_btn = QPushButton("Exit", self)
+        exit_btn.clicked.connect(self.exit_program)
+        layout.addWidget(exit_btn)
 
         self.setLayout(layout)
-        self.setGeometry(100, 100, 240, 240)
-        self.setWindowTitle("Recycle Bin Cleaner")
+        self.setWindowTitle("Temp File Cleaner GUI")
 
-    def clean_recycle_bin(self):
-        result = clean_recycle_bin()
-        self.show_popup(result)
+    def clean_temp_files(self):
+        frequency_days, next_cleanup_date = get_cleanup_schedule()
 
-    def add_days_dialog(self):
-        days, ok = QInputDialog.getInt(self, "Add Days", "Enter how many days after you want to clean your recycle bin:")
-        if ok:
-            result = set_cleaning_frequency(days)
-            self.show_popup(result)
+        total_temp_file_size = get_total_temp_file_size()
+        mb_size = bytes_to_mb(total_temp_file_size)
 
-    def modify_days_dialog(self):
-        current_days = get_cleaning_frequency()
-        days, ok = QInputDialog.getInt(self, "Modify Cleaning Frequency", "Enter how often you want to clean your recycle bin (in days):", current_days)
-        if ok:
-            result = set_cleaning_frequency(days)
-            self.show_popup(result)
+        info_text = f"Current total size of all temporary files: {mb_size:.2f} MB\n"
 
-    def open_recycle_bin_gui(self):
-        recycle_bin_gui = RecycleBinGUI()
-        recycle_bin_gui.show()
+        if frequency_days and next_cleanup_date:
+            info_text += f"Next scheduled cleanup on: {next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}\n"
 
-    def show_popup(self, message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setText(message)
-        msg.setWindowTitle("Recycle Bin Cleaner")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
+            # Call the function to delete the temporary files
+            delete_temp_files(mb_size)
+            info_text += "Temporary files cleaned successfully."
+        else:
+            info_text += "Cleanup schedule not set. Please enter a valid frequency for cleaning."
+
+        self.show_info_popup("Cleaning Results", info_text)
+
+    def modify_cleanup_schedule(self):
+        new_frequency, new_next_cleanup_date = modify_cleanup_schedule()
+
+        if new_frequency and new_next_cleanup_date:
+            info_text = f"Cleaning frequency modified to: {new_frequency} days\n"
+            info_text += f"Next scheduled cleanup on: {new_next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}"
+            self.show_info_popup("Modification Results", info_text)
+
+    def exit_program(self):
+        sys.exit()
+
+    def show_info_popup(self, title, message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setText(message)
+        msg_box.setWindowTitle(title)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = RecycleBinCleanerGUI()
-    window.show()
-    sys.exit(app.exec_())
+    temp_file_cleaner_gui = TempFileCleanerGUI()
+    temp_file_cleaner_gui.show()
+
+    # Check if the application is not already running before starting the event loop
+    if not app.exec_():
+        sys.exit()
