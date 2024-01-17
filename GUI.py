@@ -1,35 +1,34 @@
-# universal_gui.py in global folder
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+import tkinter as tk
+from tkinter import messagebox
 from UI.recycle_bin_gui import RecycleBinCleanerGUI
+from UI.temp_remover_gui import TempFileCleanerGUI
 
-class UniversalGUI(QWidget):
+class UniversalGUI(tk.Tk):
     def __init__(self):
         super().__init__()
-
-        self.recycle_bin_gui = None
 
         self.init_ui()
 
     def init_ui(self):
-        layout = QVBoxLayout()
+        self.title("Universal GUI")
 
-        open_recycle_bin_btn = QPushButton("Open Recycle Bin Cleaner", self)
-        open_recycle_bin_btn.clicked.connect(self.open_recycle_bin_gui)
-        layout.addWidget(open_recycle_bin_btn)
+        open_recycle_bin_btn = tk.Button(self, text="Open Recycle Bin Cleaner", command=self.open_recycle_bin_gui)
+        open_recycle_bin_btn.pack(pady=10)
 
-        self.setLayout(layout)
-        self.setGeometry(300, 300, 240, 120)
-        self.setWindowTitle("Universal GUI")
+        open_temp_file_btn = tk.Button(self, text="Open Temp File Cleaner", command=self.open_temp_file_gui)
+        open_temp_file_btn.pack(pady=10)
 
     def open_recycle_bin_gui(self):
-        if not self.recycle_bin_gui:
-            self.recycle_bin_gui = RecycleBinCleanerGUI()
-            self.recycle_bin_gui.move(self.geometry().center())
-        self.recycle_bin_gui.show()
+        recycle_bin_gui = RecycleBinCleanerGUI()
+        recycle_bin_gui.geometry("300x200")
+        recycle_bin_gui.mainloop()
+
+    def open_temp_file_gui(self):
+        temp_file_gui = TempFileCleanerGUI()
+        temp_file_gui.geometry("300x200")
+        temp_file_gui.mainloop()
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    universal_gui = UniversalGUI()
-    universal_gui.show()
-    sys.exit(app.exec_())
+    app = UniversalGUI()
+    app.geometry("300x200")
+    app.mainloop()

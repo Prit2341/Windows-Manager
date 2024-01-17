@@ -1,7 +1,7 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
+import tempfile
+import os
 from datetime import datetime, timedelta
-from tempcleaner import bytes_to_mb, get_total_temp_file_size, delete_temp_files, get_cleanup_schedule, modify_cleanup_schedule
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QMessageBox, QInputDialog
 
 class TempFileCleanerGUI(QWidget):
     def __init__(self):
@@ -12,67 +12,93 @@ class TempFileCleanerGUI(QWidget):
     def init_ui(self):
         layout = QVBoxLayout()
 
-        self.info_label = QLabel("Welcome to Temp File Cleaner GUI!", self)
-        layout.addWidget(self.info_label)
+        clean_direct_btn = QPushButton("Clean Temporary Files", self)
+        clean_direct_btn.clicked.connect(self.clean_direct)
+        layout.addWidget(clean_direct_btn)
 
-        clean_btn = QPushButton("Clean Temporary Files", self)
-        clean_btn.clicked.connect(self.clean_temp_files)
-        layout.addWidget(clean_btn)
+        set_frequency_btn = QPushButton("Set Cleaning Frequency", self)
+        set_frequency_btn.clicked.connect(self.set_frequency)
+        layout.addWidget(set_frequency_btn)
 
-        modify_btn = QPushButton("Modify Cleaning Schedule", self)
-        modify_btn.clicked.connect(self.modify_cleanup_schedule)
-        layout.addWidget(modify_btn)
-
-        exit_btn = QPushButton("Exit", self)
-        exit_btn.clicked.connect(self.exit_program)
-        layout.addWidget(exit_btn)
+        modify_schedule_btn = QPushButton("Modify Cleaning Schedule", self)
+        modify_schedule_btn.clicked.connect(self.modify_schedule)
+        layout.addWidget(modify_schedule_btn)
 
         self.setLayout(layout)
-        self.setWindowTitle("Temp File Cleaner GUI")
+        self.setGeometry(300, 300, 240, 120)
+        self.setWindowTitle("Temp File Cleaner")
 
-    def clean_temp_files(self):
-        frequency_days, next_cleanup_date = get_cleanup_schedule()
+    def bytes_to_mb(self, bytes_value):
+        mb_value = bytes_value / (1024 * 1024)
+        return mb_value
 
-        total_temp_file_size = get_total_temp_file_size()
-        mb_size = bytes_to_mb(total_temp_file_size)
+    def get_total_temp_file_size(self):
+        temp_dir = tempfile.gettempdir()
+        temp_files = [f for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
+        total_size = 0
+        for file in temp_files:
+            file_path = os.path.join(temp_dir, file)
+            total_size += os.path.getsize(file_path)
+        return total_size
 
-        info_text = f"Current total size of all temporary files: {mb_size:.2f} MB\n"
+    def is_file_running(self, file_path):
+        try:
+            with open(file_path, 'r'):
+                return True
+        except IOError:
+            return False
 
-        if frequency_days and next_cleanup_date:
-            info_text += f"Next scheduled cleanup on: {next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}\n"
+    def delete_temp_files(self):
+        temp_dir = tempfile.gettempdir()
+        temp_files = [f for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
+        for file in temp_files:
+            file_path = os.path.join(temp_dir, file)
+            try:
+                if self.is_file_running(file_path):
+                    pass
+                else:
+                    os.remove(file_path)
+                    print(f"Deleted: {file_path}")
+            except Exception as e:
+                pass
 
-            # Call the function to delete the temporary files
-            delete_temp_files(mb_size)
-            info_text += "Temporary files cleaned successfully."
-        else:
-            info_text += "Cleanup schedule not set. Please enter a valid frequency for cleaning."
+    def clean_direct(self):
+        total_temp_file_size = self.get_total_temp_file_size()
+        mb_size = self.bytes_to_mb(total_temp_file_size)
+        self.delete_temp_files()
+        message = f"Temporary files cleaned successfully.\nTotal size of all temporary files: {mb_size:.2f} MB"
+        self.show_popup("Clean Directly", message)
 
-        self.show_info_popup("Cleaning Results", info_text)
+    def set_frequency(self):
+        try:
+            frequency_days, ok = QInputDialog.getInt(self, "Set Cleaning Frequency", "Enter how often you want to clean your temp files (in days):")
+            if ok:
+                next_cleanup_date = datetime.now() + timedelta(days=frequency_days)
+                message = f"Cleaning frequency set to {frequency_days} days.\nNext scheduled cleanup on: {next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}"
+                self.show_popup("Set Cleaning Frequency", message)
+        except ValueError:
+            self.show_popup("Error", "Invalid input. Please enter a valid number.")
 
-    def modify_cleanup_schedule(self):
-        new_frequency, new_next_cleanup_date = modify_cleanup_schedule()
+    def modify_schedule(self):
+        try:
+            frequency_days, ok = QInputDialog.getInt(self, "Modify Cleaning Schedule", "Enter how often you want to clean your temp files (in days):")
+            if ok:
+                next_cleanup_date = datetime.now() + timedelta(days=frequency_days)
+                message = f"Cleaning schedule modified.\nNext scheduled cleanup on: {next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}"
+                self.show_popup("Modify Cleaning Schedule", message)
+        except ValueError:
+            self.show_popup("Error", "Invalid input. Please enter a valid number.")
 
-        if new_frequency and new_next_cleanup_date:
-            info_text = f"Cleaning frequency modified to: {new_frequency} days\n"
-            info_text += f"Next scheduled cleanup on: {new_next_cleanup_date.strftime('%Y-%m-%d %H:%M:%S')}"
-            self.show_info_popup("Modification Results", info_text)
-
-    def exit_program(self):
-        sys.exit()
-
-    def show_info_popup(self, title, message):
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setText(message)
-        msg_box.setWindowTitle(title)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec_()
+    def show_popup(self, title, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(message)
+        msg.setWindowTitle(title)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QApplication([])
     temp_file_cleaner_gui = TempFileCleanerGUI()
     temp_file_cleaner_gui.show()
-
-    # Check if the application is not already running before starting the event loop
-    if not app.exec_():
-        sys.exit()
+    app.exec_()
