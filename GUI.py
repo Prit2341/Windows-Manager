@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from UI.recycle_bin_gui import RecycleBinCleanerGUI
 from UI.temp_remover_gui import TempFileCleanerGUI
+from UI.file_organizer_gui import FileOrganizerGUI
 
 class UniversalGUI(tk.Tk):
     def __init__(self):
@@ -18,6 +19,9 @@ class UniversalGUI(tk.Tk):
         open_temp_file_btn = tk.Button(self, text="Open Temp File Cleaner", command=self.open_temp_file_gui)
         open_temp_file_btn.pack(pady=10)
 
+        open_file_organizer_btn = tk.Button(self, text="Open File Organizer", command=self.open_file_organizer_gui)
+        open_file_organizer_btn.pack(pady=10)
+
     def open_recycle_bin_gui(self):
         recycle_bin_gui = RecycleBinCleanerGUI()
         recycle_bin_gui.geometry("300x200")
@@ -27,6 +31,11 @@ class UniversalGUI(tk.Tk):
         temp_file_gui = TempFileCleanerGUI()
         temp_file_gui.geometry("300x200")
         temp_file_gui.mainloop()
+
+    def open_file_organizer_gui(self):
+        file_organizer_gui = FileOrganizerGUI()
+        file_organizer_gui.geometry("500x300")
+        file_organizer_gui.mainloop()
 
 if __name__ == '__main__':
     app = UniversalGUI()
