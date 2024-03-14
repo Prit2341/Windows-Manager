@@ -5,6 +5,8 @@ from UI.temp_remover_gui import TempFileCleanerGUI
 from UI.file_organizer_gui import FileOrganizerGUI
 from UI.close_app_gui import App  # Import the Auto Close App GUI
 from UI.summrizer_gui import PDFSummarizerGUI
+from UI.pdf_to_docx_gui import PDFtoDOCXConverterGUI
+
 class UniversalGUI(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -29,6 +31,9 @@ class UniversalGUI(tk.Tk):
         
         open_pdf_summarizer_btn = tk.Button(self, text="Open PDF Summarizer", command=self.open_pdf_summarizer_gui)
         open_pdf_summarizer_btn.pack(pady=10)
+        
+        open_pdf_converter_btn = tk.Button(self, text="Open PDF to DOCX Converter", command=self.open_pdf_converter_gui)
+        open_pdf_converter_btn.pack(pady=10)
 
     def open_recycle_bin_gui(self):
         recycle_bin_gui = RecycleBinCleanerGUI()
@@ -54,6 +59,11 @@ class UniversalGUI(tk.Tk):
         pdf_summarizer_gui = PDFSummarizerGUI()
         pdf_summarizer_gui.geometry("300x100")
         pdf_summarizer_gui.mainloop()
+        
+    def open_pdf_converter_gui(self):
+        pdf_converter_gui = PDFtoDOCXConverterGUI()
+        pdf_converter_gui.geometry("500x200")
+        pdf_converter_gui.mainloop()
 
 if __name__ == '__main__':
     app = UniversalGUI()
