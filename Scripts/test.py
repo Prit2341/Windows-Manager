@@ -1,82 +1,80 @@
+import os
 import tkinter as tk
-from tkinter import ttk, messagebox
-import threading
-import ctypes
-import time
-import psutil
-from plyer import notification  # Install plyer library: pip install plyer
+from tkinter import filedialog, messagebox
+from pdf2docx import Converter
+from threading import Thread
 
-class LASTINPUTINFO(ctypes.Structure):
-    _fields_ = [("cbSize", ctypes.c_uint),
-                ("dwTime", ctypes.c_ulong)]
-
-def get_last_input_time():
-    lii = LASTINPUTINFO()
-    lii.cbSize = ctypes.sizeof(LASTINPUTINFO)
-    ctypes.windll.user32.GetLastInputInfo(ctypes.byref(lii))
-    millis = ctypes.windll.kernel32.GetTickCount() - lii.dwTime
-    return millis / 1000.0
-
-def close_inactive_apps(target_inactive_duration_minutes):
-    time.sleep(target_inactive_duration_minutes * 60)
-    notification.notify(
-        title="Auto Close App",
-        message=f"System will close inactive apps now.",
-        timeout=10
-    )
-
-    while True:
-        try:
-            for process in psutil.process_iter(['pid', 'name', 'create_time']):
-                create_time = process.info['create_time']
-                current_time = time.time()
-                elapsed_time = current_time - create_time
-                elapsed_minutes = elapsed_time / 60
-
-                if elapsed_minutes >= target_inactive_duration_minutes:
-                    process_name = process.info['name']
-                    pid = process.info['pid']
-                    if pid != 0:  # Exclude System Idle Process
-                        print(f"Closing {process_name} (PID: {pid}) after {target_inactive_duration_minutes} minutes of inactivity.")
-                        psutil.Process(pid).terminate()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-
-        # Check for user inactivity
-        if get_last_input_time() > target_inactive_duration_minutes * 60:
-            print(f"No user activity detected for {target_inactive_duration_minutes} minutes. Closing inactive apps.")
-            ctypes.windll.user32.LockWorkStation()  # Lock the workstation
-            time.sleep(5)  # Allow time for the system to lock before terminating processes
-            ctypes.windll.user32.SendMessageW(65535, 274, 61808, 2)  # Log off the user
-
-        time.sleep(10)  # Adjust the interval as needed
-
-class App(tk.Tk):
+class PDFtoDOCXConverterGUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Auto Close App")
-        self.geometry("300x150")
 
-        self.label = ttk.Label(self, text="Enter inactivity duration (minutes):")
-        self.label.pack(pady=10)
+        self.title("PDF to DOCX Converter")
+        self.geometry("500x200")
 
-        self.entry = ttk.Entry(self)
-        self.entry.pack(pady=10)
+        self.pdf_path = tk.StringVar()
+        self.output_path = "D:/"  # Set the default output directory to "D:/"
 
-        self.button = ttk.Button(self, text="Start", command=self.start_thread)
-        self.button.pack(pady=10)
+        self.init_ui()
 
-    def start_thread(self):
+    def init_ui(self):
+        self.label1 = tk.Label(self, text="PDF File Location:")
+        self.label1.grid(row=0, column=0, padx=10, pady=5)
+
+        self.pdf_entry = tk.Entry(self, textvariable=self.pdf_path, width=40)
+        self.pdf_entry.grid(row=0, column=1, padx=10, pady=5)
+
+        self.pdf_browse_button = tk.Button(self, text="Browse", command=self.browse_pdf)
+        self.pdf_browse_button.grid(row=0, column=2, padx=10, pady=5)
+
+        self.label2 = tk.Label(self, text="Output DOCX File Location:")
+        self.label2.grid(row=1, column=0, padx=10, pady=5)
+
+        self.output_entry = tk.Entry(self, textvariable=self.output_path, width=30)
+        self.output_entry.grid(row=1, column=1, padx=10, pady=5)
+
+        self.output_browse_button = tk.Button(self, text="Browse", command=self.browse_output)
+        self.output_browse_button.grid(row=1, column=2, padx=10, pady=5)
+
+        self.convert_button = tk.Button(self, text="Convert", command=self.convert_to_docx)
+        self.convert_button.grid(row=2, column=1, padx=10, pady=5)
+
+    def browse_pdf(self):
+        file_path = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf")])
+        if file_path:
+            self.pdf_path.set(file_path)
+
+    def browse_output(self):
+        dir_path = filedialog.askdirectory()
+        if dir_path:
+            self.output_path = dir_path
+            self.output_entry.delete(0, tk.END)
+            self.output_entry.insert(0, self.output_path)
+
+    def convert_to_docx(self):
+        pdf_path = self.pdf_path.get().strip()
+        output_path = os.path.join(self.output_path, os.path.basename(pdf_path.replace(".pdf", ".docx")))
+
+        if not pdf_path:
+            messagebox.showwarning("PDF File Location", "Please enter the PDF file location.")
+            return
+        if not os.path.isfile(pdf_path):
+            messagebox.showerror("File Not Found", "PDF file not found at the specified location.")
+            return
+
+        self.convert_button.config(state="disabled")
+        Thread(target=self.convert_pdf_to_docx, args=(pdf_path, output_path)).start()
+
+    def convert_pdf_to_docx(self, pdf_path, output_path):
         try:
-            target_inactive_duration_minutes = int(self.entry.get())
-            threading.Thread(target=self.run_in_background, args=(target_inactive_duration_minutes,), daemon=True).start()
-            self.iconify()  # Minimize to system tray
-        except ValueError:
-            messagebox.showerror("Error", "Invalid input. Please enter a valid number.")
-
-    def run_in_background(self, target_inactive_duration_minutes):
-        close_inactive_apps(target_inactive_duration_minutes)
+            cv = Converter(pdf_path)
+            cv.convert(output_path, start=0, end=None)
+            cv.close()
+            messagebox.showinfo("Conversion Complete", "PDF to DOCX conversion completed successfully!")
+        except Exception as e:
+            messagebox.showerror("Conversion Error", f"An error occurred during conversion: {str(e)}")
+        finally:
+            self.convert_button.config(state="normal")
 
 if __name__ == "__main__":
-    app = App()
+    app = PDFtoDOCXConverterGUI()
     app.mainloop()

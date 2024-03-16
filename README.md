@@ -1,6 +1,12 @@
 # Windows Manager
 
+<<<<<<< HEAD
 Windows Manager is a utility tool designed to simplify and automate various file management tasks on the Windows operating system. It provides four key functionalities to help users maintain their files and optimize storage space efficiently.
+=======
+
+
+Windows Manager is a utility tool designed to simplify and automate various file management tasks on the Windows operating system. It provides six key functionalities to help users maintain their files and optimize storage space efficiently and become more productive.
+>>>>>>> test
 
 ## Table of Contents
 - [About](#about)
@@ -8,14 +14,21 @@ Windows Manager is a utility tool designed to simplify and automate various file
 - [Functionalities](#functionalities)
   - [Temp Files Cleaner](#temp-files-cleaner)
   - [Recycle Bin Automated](#recycle-bin-automated)
+<<<<<<< HEAD
   - [Sleep Timing](#sleep-timing)
+=======
+  - [Auto Sleep the Windows](#auto-sleep-the-windows)
+>>>>>>> test
   - [Files Manager](#files-manager)
+  - [PDF Summrizer](#pdf-summrizer)
+  - [PDF to DOCX](#pdf-to-docx)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 
 ## About
 
+<<<<<<< HEAD
 Windows Manager is a powerful tool created to enhance the file management experience for Windows users. By automating certain tasks, it streamlines the process of cleaning temporary files, managing the Recycle Bin, organizing files, and managing user files that have not been accessed for a specified duration.
 
 ## Installation
@@ -24,10 +37,21 @@ oh, Not First We have to clone the repo First my bad 🤦‍♂️🤦‍♂️
 First, clone the repository: `git clone https://github.com/your-username/windows-manager.git`
 
 Then install the required libraries:
+=======
+Windows Manager is a powerful tool created to enhance the file management experience for Windows users. By automating certain tasks, it streamlines the process of cleaning temporary files, managing the Recycle Bin, organizing WhatsApp files, PDF Summrizer, PDF to DOCX and managing user files that have not been accessed for a specified duration. When you see the code you will probably thinks it's just a piece of code on how you can use them on your PC<br>
+😎😎let me explain!
+
+## Installation
+
+Before diving in, ensure you've installed all the necessary libraries in your virtual environment (as you're probably already aware). Now, let's start by cloning the repository.<br>
+Clone the repository:
+>>>>>>> test
 ```
-pip install tempfile # for Temp file
-pip install pywin32 # for Recycle Bin
-pip install watchdog # for WhatsApp Automation
+https://github.com/Prit2341/Windows-Manager.git
+```
+Then Install  <strong>Requirement.txt<strong> file in your virtual enviroment
+```
+pip install -r requirements.txt
 ```
 Now for the Windows Setup file
 
@@ -73,13 +97,27 @@ The Temp Files Cleaner functionality allows users to remove unnecessary temporar
 
 With Recycle Bin Automation, users no longer need to worry about emptying their Recycle Bin manually. This functionality automatically clears the Recycle Bin at specified intervals, ensuring a clutter-free system.
 
+<<<<<<< HEAD
 ### Sleep Timing
 
 The Sleep Timing feature enables the system to automatically enter sleep mode when the user is inactive for a specified duration. This helps conserve energy and prolong system longevity.
+=======
+### Auto Sleep the Windows
+
+Optimize energy usage and system performance with automated sleep mode activation. Enjoy enhanced energy efficiency without compromising accessibility, thanks to intelligent sleep mode activation during periods of inactivity.
+>>>>>>> test
 
 ### Files Manager
 
 The Files Manager functionality helps users declutter their file system by automatically relocating files that haven't been accessed for a defined period. This option aids in optimizing storage space while keeping essential files organized.
+
+### PDF Summrizer
+
+Extract key insights efficiently from PDF documents, saving you valuable time. Whether it's research papers or lengthy reports, our summarizer intelligently condenses content, allowing you to focus on what matters most.
+
+### PDF to DOCX
+
+Seamlessly convert PDF files to editable DOCX format for enhanced versatility. Unlock the potential of your documents by effortlessly editing, formatting, and collaborating on them using familiar tools like Microsoft Word.
 
 ## Contributing
 
